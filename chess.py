@@ -20,6 +20,10 @@ class Chessboard:
     def blank(self, x, y):
         self._board[x][y] = None
 
+    def draw(self):
+        for row in self._board:
+            print(''.join([piece.draw() if piece else '  ' for piece in row]))
+
 
 class Player:
     players = []
@@ -44,6 +48,10 @@ class Piece:
     value = 0
     name = 'Piece'
     symbol = '  '
+    moves = []
+    attacks = []
+    move_directions = []
+    attack_directions = []
 
     def __init__(self, board, player, x, y):
         self.board = board
@@ -61,8 +69,27 @@ class Piece:
 
     @property
     def legal_moves(self):
+        def targetPosition(pos):
+            x, y = pos
+            return (self.x + x, self.y + y * self.player.direction)
 
         legal_moves = []
+
+        for position in self.moves:
+            target = targetPosition(position)
+            if self.board.get(*target) is None:
+                legal_moves.append(target)
+
+        for position in self.attacks:
+            target = targetPosition(position)
+            if self.board.get(*target) and self.board.get(*target).player is not self.player:
+                legal_moves.append(target)
+
+        for direction in self.move_directions:
+            pass
+
+        for direction in self.attack_directions:
+            pass
 
         return legal_moves
 
@@ -87,4 +114,8 @@ class Piece:
 
             self._x, self._y = (x, y)
             self.board.set(x, y, self)
+            self.has_moved = True
             self.player.end_turn()
+
+    def draw(self):
+        return '{}{}'.format('\033[1;34;40m' if self.player.name == 'Black' else '\033[1;37;40m', self.symbol)
