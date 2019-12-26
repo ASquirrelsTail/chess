@@ -31,10 +31,19 @@ class King(Piece):
     value = maxsize
     symbol = '♚ '
     moves = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
-    attacks = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
+    attacks = moves
 
     @property
     def legal_moves(self):
         legal_moves = super().legal_moves
+        # Remove legal moves that put the king in check.
 
         return legal_moves
+
+
+class Knight(Piece):
+    name = 'Knight'
+    value = 3
+    symbol = '♞ '
+    moves = [(1, 2), (-1, 2), (2, 1), (2, -1), (-2, 1), (-2, -1), (-1, -2), (1, -2)]
+    attacks = moves

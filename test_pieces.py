@@ -1,6 +1,6 @@
 import unittest
 from chess import Chessboard, Player
-from pieces import Pawn, King
+from pieces import Pawn, King, Knight
 
 
 class PieceTestCase(unittest.TestCase):
@@ -164,6 +164,53 @@ class KingTestCase(PieceTestCase):
                               [(3, 5), (4, 5), (5, 5),
                                (3, 4), (5, 4),
                                (3, 3), (4, 3), (5, 3)])
+
+
+class KnightTestCase(PieceTestCase):
+    def create_knight(self, x, y):
+        return Knight(self.chessboard, self.player1, x, y)
+
+    def test_possible_moves(self):
+        knight = self.create_knight(4, 4)
+
+        self.assertCountEqual(knight.legal_moves,
+                              [(3, 6), (5, 6),
+                               (6, 5), (6, 3),
+                               (2, 5), (2, 3),
+                               (3, 2), (5, 2)])
+
+    def test_cant_move_if_blocked(self):
+        knight = self.create_knight(4, 4)
+
+        for position in [(3, 6), (5, 6),
+                         (6, 5), (6, 3),
+                         (2, 5), (2, 3),
+                         (3, 2), (5, 2)]:
+            self.create_pawn(*position)
+
+        self.assertEqual(knight.legal_moves, [])
+
+    def test_cant_move_off_board(self):
+        knight = self.create_knight(1, 6)
+
+        self.assertCountEqual(knight.legal_moves,
+                              [(3, 7), (3, 5),
+                               (2, 4), (0, 4)])
+
+    def test_can_attack_in_L_shape(self):
+        knight = self.create_knight(4, 4)
+
+        for position in [(3, 6), (5, 6),
+                         (6, 5), (6, 3),
+                         (2, 5), (2, 3),
+                         (3, 2), (5, 2)]:
+            self.create_enemy(*position)
+
+        self.assertCountEqual(knight.legal_moves,
+                              [(3, 6), (5, 6),
+                               (6, 5), (6, 3),
+                               (2, 5), (2, 3),
+                               (3, 2), (5, 2)])
 
 
 if __name__ == '__main__':
