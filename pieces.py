@@ -47,3 +47,11 @@ class Knight(Piece):
     symbol = '♞ '
     moves = [(1, 2), (-1, 2), (2, 1), (2, -1), (-2, 1), (-2, -1), (-1, -2), (1, -2)]
     attacks = moves
+
+
+class Rook(Piece):
+    name = 'Rook'  # Castle
+    value = 5
+    symbol = '♜ '
+    move_directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    attack_directions = move_directions

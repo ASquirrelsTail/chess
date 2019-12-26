@@ -73,8 +73,15 @@ class Piece:
     @property
     def legal_moves(self):
         def targetPosition(pos):
+            # Sets the target relative to the piece's current position.
             x, y = pos
             return (self.x + x, self.y + y * self.player.direction)
+
+        def advancePosition(old_pos, direction):
+            # Advances the target from its old position in the given direction.
+            x, y = old_pos
+            ad_x, ad_y = direction
+            return (x + ad_x, y + ad_y * self.player.direction)
 
         legal_moves = []
 
@@ -89,10 +96,21 @@ class Piece:
                 legal_moves.append(target)
 
         for direction in self.move_directions:
-            pass
+            target = targetPosition(direction)
+            while self.board.get(*target) is None:
+                legal_moves.append(target)
+                target = advancePosition(target, direction)
 
         for direction in self.attack_directions:
-            pass
+            target = targetPosition(direction)
+            if self.board.get(*target):
+                if self.board.get(*target).player is not self.player:
+                    legal_moves.append(target)
+            else:
+                while self.board.get(*target) is None:
+                    target = advancePosition(target, direction)
+                    if self.board.get(*target) and self.board.get(*target).player is not self.player:
+                        legal_moves.append(target)
 
         return legal_moves
 

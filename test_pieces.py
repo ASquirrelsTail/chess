@@ -1,6 +1,6 @@
 import unittest
 from chess import Chessboard, Player
-from pieces import Pawn, King, Knight
+from pieces import Pawn, King, Knight, Rook
 
 
 class PieceTestCase(unittest.TestCase):
@@ -211,6 +211,66 @@ class KnightTestCase(PieceTestCase):
                                (6, 5), (6, 3),
                                (2, 5), (2, 3),
                                (3, 2), (5, 2)])
+
+
+class RookTestCase(PieceTestCase):
+    # Castle
+    def create_rook(self, x, y):
+        return Rook(self.chessboard, self.player1, x, y)
+
+    def test_can_move_to_any_position_in_cardinal_directions(self):
+        '''
+        The rook should be able to move to any position in the directions up, down, left, right,
+        within the bounds of the board.
+        '''
+        rook = self.create_rook(4, 4)
+
+        self.assertCountEqual(rook.legal_moves,
+                              [(4, 5), (4, 6), (4, 7),
+                               (5, 4), (6, 4), (7, 4),
+                               (4, 3), (4, 2), (4, 1), (4, 0),
+                               (3, 4), (2, 4), (1, 4), (0, 4)])
+
+    def test_can_only_move_until_blocked(self):
+        '''
+        The rook shouldn't be able to move into or past allied pieces.
+        '''
+        rook = self.create_rook(4, 4)
+
+        for position in [(4, 6), (6, 4), (4, 2), (2, 4)]:
+            self.create_pawn(*position)
+
+        self.assertCountEqual(rook.legal_moves,
+                              [(4, 5), (5, 4), (4, 3), (3, 4)])
+
+    def test_cant_move_if_blocked(self):
+        rook = self.create_rook(0, 0)
+
+        for position in [(1, 0), (0, 1)]:
+            self.create_pawn(*position)
+
+        self.assertEqual(rook.legal_moves, [])
+
+    def test_can_attack_in_cardinal_directions(self):
+        rook = self.create_rook(4, 4)
+
+        for position in [(4, 6), (6, 4), (4, 2), (2, 4)]:
+            self.create_enemy(*position)
+
+        self.assertCountEqual(rook.legal_moves,
+                              [(4, 5), (4, 6),
+                               (5, 4), (6, 4),
+                               (4, 3), (4, 2),
+                               (3, 4), (2, 4)])
+
+    def test_cant_attack_if_blocked(self):
+        rook = self.create_rook(0, 0)
+
+        self.create_pawn(0, 2)
+        self.create_pawn(1, 0)
+        self.create_enemy(0, 3)
+
+        self.assertEqual(rook.legal_moves, [(0, 1)])
 
 
 if __name__ == '__main__':
