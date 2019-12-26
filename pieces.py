@@ -9,7 +9,7 @@ class Pawn(Piece):
     '''
     name = 'Pawn'
     value = 1
-    symbol = '♟ '
+    symbol = '♟'
     moves = [(0, 1)]
     attacks = [(1, 1), (-1, 1)]
 
@@ -28,8 +28,8 @@ class Pawn(Piece):
 
 class King(Piece):
     name = 'King'
-    value = maxsize
-    symbol = '♚ '
+    value = maxsize - 39
+    symbol = '♚'
     moves = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
     attacks = moves
 
@@ -44,7 +44,7 @@ class King(Piece):
 class Knight(Piece):
     name = 'Knight'
     value = 3
-    symbol = '♞ '
+    symbol = '♞'
     moves = [(1, 2), (-1, 2), (2, 1), (2, -1), (-2, 1), (-2, -1), (-1, -2), (1, -2)]
     attacks = moves
 
@@ -52,6 +52,22 @@ class Knight(Piece):
 class Rook(Piece):
     name = 'Rook'  # Castle
     value = 5
-    symbol = '♜ '
+    symbol = '♜'
     move_directions = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+    attack_directions = move_directions
+
+
+class Bishop(Piece):
+    name = 'Bishop'
+    value = 3
+    symbol = '♝'
+    move_directions = [(1, 1), (-1, 1), (1, -1), (-1, -1)]
+    attack_directions = move_directions
+
+
+class Queen(Piece):
+    name = 'Queen'
+    value = 9
+    symbol = '♛'
+    move_directions = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
     attack_directions = move_directions

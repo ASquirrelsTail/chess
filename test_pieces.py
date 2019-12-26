@@ -1,6 +1,9 @@
 import unittest
 from chess import Chessboard, Player
 from pieces import Pawn, King, Knight, Rook
+from sys import argv
+if '-v' in argv:
+    from console import print_board
 
 
 class PieceTestCase(unittest.TestCase):
@@ -11,6 +14,10 @@ class PieceTestCase(unittest.TestCase):
         self.chessboard = Chessboard()
         self.player1 = Player('White', 1)
         self.player2 = Player('Black', -1)
+
+    def tearDown(self):
+        if '-v' in argv:
+            print_board(self.chessboard)
 
     def create_enemy(self, x, y):
         '''

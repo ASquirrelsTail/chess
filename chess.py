@@ -23,10 +23,6 @@ class Chessboard:
     def blank(self, x, y):
         self._board[x][y] = None
 
-    def draw(self):
-        for row in self._board:
-            print(''.join([piece.draw() if piece else '  ' for piece in row]))
-
 
 class Player:
     players = []
@@ -137,6 +133,3 @@ class Piece:
             self.board.set(x, y, self)
             self.has_moved = True
             self.player.end_turn()
-
-    def draw(self):
-        return '{}{}'.format('\033[1;34;40m' if self.player.name == 'Black' else '\033[1;37;40m', self.symbol)
