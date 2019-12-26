@@ -9,9 +9,12 @@ class Chessboard:
         return self._board[key]
 
     def get(self, x, y):
-        try:
-            return self._board[x][y]
-        except IndexError:
+        if x >= 0 and y >= 0:
+            try:
+                return self._board[x][y]
+            except IndexError:
+                return False
+        else:
             return False
 
     def set(self, x, y, value):

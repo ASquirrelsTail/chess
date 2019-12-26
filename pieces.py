@@ -1,4 +1,5 @@
 from chess import Piece
+from sys import maxsize
 
 
 class Pawn(Piece):
@@ -21,5 +22,19 @@ class Pawn(Piece):
                 and self.board.get(self.x, self.y + self.player.direction) is None \
                 and not self.has_moved:
             legal_moves.append((self.x, self.y + 2 * self.player.direction))
+
+        return legal_moves
+
+
+class King(Piece):
+    name = 'King'
+    value = maxsize
+    symbol = '♚ '
+    moves = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
+    attacks = [(1, 0), (-1, 0), (1, 1), (-1, 1), (0, 1), (0, -1), (-1, -1), (1, -1)]
+
+    @property
+    def legal_moves(self):
+        legal_moves = super().legal_moves
 
         return legal_moves

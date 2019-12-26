@@ -1,11 +1,11 @@
 import unittest
 from chess import Chessboard, Player
-from pieces import Pawn
+from pieces import Pawn, King
 
 
 class PieceTestCase(unittest.TestCase):
     '''
-    Test case to set up board and players and add utiity functions.
+    Test case to set up board and players and add utility functions.
     '''
     def setUp(self):
         self.chessboard = Chessboard()
@@ -13,7 +13,16 @@ class PieceTestCase(unittest.TestCase):
         self.player2 = Player('Black', -1)
 
     def create_enemy(self, x, y):
+        '''
+        Utility function to create a Pawn to attack.
+        '''
         return Pawn(self.chessboard, self.player2, x, y)
+
+    def create_pawn(self, x, y):
+        '''
+        Utility function to create an allied Pawn to block moves.
+        '''
+        return Pawn(self.chessboard, self.player1, x, y)
 
     def assertItemsIn(self, first, second):
         '''
@@ -31,9 +40,6 @@ class PieceTestCase(unittest.TestCase):
 
 
 class PawnTestCase(PieceTestCase):
-    def create_pawn(self, x, y):
-        return Pawn(self.chessboard, self.player1, x, y)
-
     def test_possible_moves(self):
         '''
         Test the Pawn can move forwards one or two.
@@ -115,6 +121,49 @@ class PawnTestCase(PieceTestCase):
         pawn = self.create_pawn(4, 7)
 
         self.assertEqual([], pawn.legal_moves)
+
+
+class KingTestCase(PieceTestCase):
+    def create_king(self, x, y):
+        return King(self.chessboard, self.player1, x, y)
+
+    def test_possible_moves(self):
+        king = self.create_king(4, 4)
+
+        self.assertCountEqual(king.legal_moves,
+                              [(3, 5), (4, 5), (5, 5),
+                               (3, 4), (5, 4),
+                               (3, 3), (4, 3), (5, 3)])
+
+    def test_cant_move_if_blocked(self):
+        king = self.create_king(4, 4)
+
+        for position in [(3, 5), (4, 5), (5, 5),
+                         (3, 4), (5, 4),
+                         (3, 3), (4, 3), (5, 3)]:
+            self.create_pawn(*position)
+
+        self.assertEqual(king.legal_moves, [])
+
+    def test_cant_move_off_edge_of_board(self):
+        king = self.create_king(0, 7)
+
+        self.assertCountEqual(king.legal_moves,
+                              [(1, 7), (0, 6), (1, 6)])
+
+    def test_can_attack_in_all_directions(self):
+        # This test needs ammending if it becomes illegal or Kings to move in to check.
+        king = self.create_king(4, 4)
+
+        for position in [(3, 5), (4, 5), (5, 5),
+                         (3, 4), (5, 4),
+                         (3, 3), (4, 3), (5, 3)]:
+            self.create_enemy(*position)
+
+        self.assertCountEqual(king.legal_moves,
+                              [(3, 5), (4, 5), (5, 5),
+                               (3, 4), (5, 4),
+                               (3, 3), (4, 3), (5, 3)])
 
 
 if __name__ == '__main__':
