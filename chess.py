@@ -48,9 +48,7 @@ class Piece:
     name = 'Piece'
     symbol = '  '
     moves = []
-    attacks = []
     move_directions = []
-    attack_directions = []
 
     def __init__(self, board, player, x, y):
         self.board = board
@@ -68,11 +66,9 @@ class Piece:
 
     @property
     def legal_moves(self):
-        def targetPosition(pos):
-            # Sets the target relative to the piece's current position.
-            x, y = pos
-            return (self.x + x, self.y + y * self.player.direction)
-
+        '''
+        Returns a list of tuples for legal moves.
+        '''
         def advancePosition(old_pos, direction):
             # Advances the target from its old position in the given direction.
             x, y = old_pos
@@ -82,31 +78,22 @@ class Piece:
         legal_moves = []
 
         for position in self.moves:
-            target = targetPosition(position)
-            if self.board.get(*target) is None:
-                legal_moves.append(target)
-
-        for position in self.attacks:
-            target = targetPosition(position)
-            if self.board.get(*target) and self.board.get(*target).player is not self.player:
+            target = self.positionRelative(position)
+            target_piece = self.board.get(*target)
+            if target_piece is None \
+                    or (target_piece and target_piece.player is not self.player):
                 legal_moves.append(target)
 
         for direction in self.move_directions:
-            target = targetPosition(direction)
-            while self.board.get(*target) is None:
+            target = self.positionRelative(direction)
+            target_piece = self.board.get(*target)
+            while target_piece is None:
                 legal_moves.append(target)
                 target = advancePosition(target, direction)
-
-        for direction in self.attack_directions:
-            target = targetPosition(direction)
-            if self.board.get(*target):
-                if self.board.get(*target).player is not self.player:
-                    legal_moves.append(target)
+                target_piece = self.board.get(*target)
             else:
-                while self.board.get(*target) is None:
-                    target = advancePosition(target, direction)
-                    if self.board.get(*target) and self.board.get(*target).player is not self.player:
-                        legal_moves.append(target)
+                if target_piece and target_piece.player is not self.player:
+                    legal_moves.append(target)
 
         return legal_moves
 
@@ -121,6 +108,11 @@ class Piece:
     @property
     def position(self):
         return (self._x, self._y)
+
+    def positionRelative(self, pos):
+        # Sets the target relative to the piece's current position.
+        x, y = pos
+        return (self.x + x, self.y + y * self.player.direction)
 
     def move(self, x, y):
         if (x, y) in self.legal_moves:

@@ -17,7 +17,7 @@ def print_board(board):
                 result += '  '
         result += Back.BLACK + '\n'
 
-    print(result)
+    print(result + Style.RESET_ALL)
 
 
 if __name__ == '__main__':

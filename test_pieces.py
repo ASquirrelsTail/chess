@@ -1,6 +1,6 @@
 import unittest
 from chess import Chessboard, Player
-from pieces import Pawn, King, Knight, Rook
+from pieces import Pawn, King, Queen, Knight, Rook, Bishop
 from sys import argv
 if '-v' in argv:
     from console import print_board
@@ -129,6 +129,14 @@ class PawnTestCase(PieceTestCase):
 
         self.assertEqual([], pawn.legal_moves)
 
+    def test_taking_pawn_awards_one_point(self):
+        self.create_pawn(4, 4)
+        enemy = self.create_enemy(5, 5)
+
+        enemy.move(4, 4)
+
+        self.assertEqual(self.player2.score, 1)
+
 
 class KingTestCase(PieceTestCase):
     def create_king(self, x, y):
@@ -159,7 +167,7 @@ class KingTestCase(PieceTestCase):
                               [(1, 7), (0, 6), (1, 6)])
 
     def test_can_attack_in_all_directions(self):
-        # This test needs ammending if it becomes illegal or Kings to move in to check.
+        # This test needs ammending if it becomes illegal for Kings to move in to check.
         king = self.create_king(4, 4)
 
         for position in [(3, 5), (4, 5), (5, 5),
@@ -219,6 +227,14 @@ class KnightTestCase(PieceTestCase):
                                (2, 5), (2, 3),
                                (3, 2), (5, 2)])
 
+    def test_taking_knight_awards_three_points(self):
+        self.create_knight(4, 4)
+        enemy = self.create_enemy(5, 5)
+
+        enemy.move(4, 4)
+
+        self.assertEqual(self.player2.score, 3)
+
 
 class RookTestCase(PieceTestCase):
     # Castle
@@ -227,8 +243,8 @@ class RookTestCase(PieceTestCase):
 
     def test_can_move_to_any_position_in_cardinal_directions(self):
         '''
-        The rook should be able to move to any position in the directions up, down, left, right,
-        within the bounds of the board.
+        The rook should be able to move to any position in the
+        directions up, down, left, right, within the bounds of the board.
         '''
         rook = self.create_rook(4, 4)
 
@@ -278,6 +294,132 @@ class RookTestCase(PieceTestCase):
         self.create_enemy(0, 3)
 
         self.assertEqual(rook.legal_moves, [(0, 1)])
+
+    def test_taking_rook_awards_five_points(self):
+        self.create_rook(4, 4)
+        enemy = self.create_enemy(5, 5)
+
+        enemy.move(4, 4)
+
+        self.assertEqual(self.player2.score, 5)
+
+
+class BishopTestCase(PieceTestCase):
+    def create_bishop(self, x, y):
+        return Bishop(self.chessboard, self.player1, x, y)
+
+    def test_can_move_to_any_diagonal_position(self):
+        bishop = self.create_bishop(4, 4)
+
+        self.assertCountEqual(bishop.legal_moves,
+                              [(5, 5), (6, 6), (7, 7),
+                               (3, 3), (2, 2), (1, 1), (0, 0),
+                               (5, 3), (6, 2), (7, 1),
+                               (3, 5), (2, 6), (1, 7)])
+
+    def test_can_only_move_until_blocked(self):
+        bishop = self.create_bishop(4, 4)
+
+        for position in [(6, 6), (2, 2), (6, 2), (2, 6)]:
+            self.create_pawn(*position)
+
+        self.assertCountEqual(bishop.legal_moves,
+                              [(5, 5), (3, 3), (5, 3), (3, 5)])
+
+    def test_can_attack_in_diagonals(self):
+        bishop = self.create_bishop(4, 4)
+
+        for position in [(6, 6), (2, 2), (6, 2), (2, 6), (1, 7)]:
+            self.create_enemy(*position)
+
+        self.assertCountEqual(bishop.legal_moves,
+                              [(5, 5), (6, 6),
+                               (3, 3), (2, 2),
+                               (5, 3), (6, 2),
+                               (3, 5), (2, 6)])
+
+    def test_cant_attack_if_blocked(self):
+        bishop = self.create_bishop(0, 0)
+
+        self.create_pawn(2, 2)
+        self.create_enemy(3, 3)
+
+        self.assertEqual(bishop.legal_moves, [(1, 1)])
+
+    def test_taking_bishop_awards_three_points(self):
+        self.create_bishop(4, 4)
+        enemy = self.create_enemy(5, 5)
+
+        enemy.move(4, 4)
+
+        self.assertEqual(self.player2.score, 3)
+
+
+class QueenTestCase(PieceTestCase):
+    def create_queen(self, x, y):
+        return Queen(self.chessboard, self.player1, x, y)
+
+    def test_can_move_to_any_diagonal_or_cardinal_position(self):
+        queen = self.create_queen(4, 4)
+
+        self.assertCountEqual(queen.legal_moves,
+                              [(5, 5), (6, 6), (7, 7),
+                               (3, 3), (2, 2), (1, 1), (0, 0),
+                               (5, 3), (6, 2), (7, 1),
+                               (3, 5), (2, 6), (1, 7),
+                               (4, 5), (4, 6), (4, 7),
+                               (5, 4), (6, 4), (7, 4),
+                               (4, 3), (4, 2), (4, 1), (4, 0),
+                               (3, 4), (2, 4), (1, 4), (0, 4)])
+
+    def test_can_only_move_until_blocked(self):
+        queen = self.create_queen(4, 4)
+
+        for position in [(6, 6), (2, 2), (6, 2), (2, 6),
+                         (4, 6), (6, 4), (4, 2), (2, 4)]:
+            self.create_pawn(*position)
+
+        self.assertCountEqual(queen.legal_moves,
+                              [(5, 5), (3, 3), (5, 3), (3, 5),
+                               (4, 5), (5, 4), (4, 3), (3, 4)])
+
+    def test_can_attack_in_diagonals_and_cardinals(self):
+        queen = self.create_queen(4, 4)
+
+        for position in [(6, 6), (2, 2), (6, 2), (2, 6), (1, 7),
+                         (4, 6), (6, 4), (4, 2), (2, 4)]:
+            self.create_enemy(*position)
+
+        self.assertCountEqual(queen.legal_moves,
+                              [(5, 5), (6, 6),
+                               (3, 3), (2, 2),
+                               (5, 3), (6, 2),
+                               (3, 5), (2, 6),
+                               (4, 5), (4, 6),
+                               (5, 4), (6, 4),
+                               (4, 3), (4, 2),
+                               (3, 4), (2, 4)])
+
+    def test_cant_attack_if_blocked(self):
+        queen = self.create_queen(0, 0)
+
+        self.create_pawn(2, 2)
+        self.create_enemy(3, 3)
+        self.create_pawn(0, 2)
+        self.create_enemy(0, 3)
+        self.create_pawn(2, 0)
+        self.create_enemy(3, 0)
+
+        self.assertCountEqual(queen.legal_moves,
+                              [(1, 1), (0, 1), (1, 0)])
+
+    def test_taking_queen_awards_nine_points(self):
+        self.create_queen(4, 4)
+        enemy = self.create_enemy(5, 5)
+
+        enemy.move(4, 4)
+
+        self.assertEqual(self.player2.score, 9)
 
 
 if __name__ == '__main__':
