@@ -8,6 +8,9 @@ class Chessboard:
     def __getitem__(self, key):
         return self._board[key]
 
+    def __len__(self):
+        return len(self._board)
+
     def get(self, x, y):
         if x >= 0 and y >= 0:
             try:
@@ -52,7 +55,8 @@ class Piece:
 
     def __init__(self, board, player, x, y):
         self.board = board
-        self._x, self._y = (x, y)
+        self._x = (len(self.board) + x) % len(self.board)
+        self._y = (len(self.board[0]) + y) % len(self.board[0])
         self.player = player
         player.pieces.append(self)
         board.set(x, y, self)
@@ -120,8 +124,15 @@ class Piece:
 
             if self.board.get(x, y):
                 self.player.score += self.board[x][y].value
+                self.board[x][y].kill()
 
             self._x, self._y = (x, y)
             self.board.set(x, y, self)
             self.has_moved = True
-            self.player.end_turn()
+            return True
+        else:
+            return False
+
+    def kill(self):
+        self.player.pieces.remove(self)
+        print(self.player.pieces)
