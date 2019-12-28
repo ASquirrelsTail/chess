@@ -49,10 +49,11 @@ class PieceTestCase(unittest.TestCase):
 class PawnTestCase(PieceTestCase):
     def test_possible_moves(self):
         '''
-        Test the Pawn can move forwards one or two.
+        Test the Pawn can move forwards one or two if it hasn't already moved.
         '''
         pawn = self.create_pawn(4, 4)
 
+        self.assertFalse(pawn.has_moved)
         self.assertCountEqual(pawn.legal_moves,
                               [(4, 5), (4, 6)])
 
@@ -60,6 +61,7 @@ class PawnTestCase(PieceTestCase):
         pawn = self.create_pawn(4, 4)
         pawn.move(4, 5)
 
+        self.assertTrue(pawn.has_moved)
         self.assertNotIn((4, 7), pawn.legal_moves)
         self.assertIn((4, 6), pawn.legal_moves)
 
@@ -179,6 +181,60 @@ class KingTestCase(PieceTestCase):
                               [(3, 5), (4, 5), (5, 5),
                                (3, 4), (5, 4),
                                (3, 3), (4, 3), (5, 3)])
+
+    def test_can_castle_if_not_moved_and_clear_line_to_rook(self):
+        king = self.create_king(4, 0)
+
+        rook = Rook(self.chessboard, self.player1, 0, 0)
+
+        self.assertFalse(king.has_moved)
+        self.assertFalse(rook.has_moved)
+        self.assertIn((2, 0), king.legal_moves)
+
+    def test_cant_castle_if_no_line_of_sight(self):
+        king = self.create_king(4, 0)
+
+        rook = Rook(self.chessboard, self.player1, 0, 0)
+        self.create_enemy(3, 0)
+
+        self.assertFalse(king.has_moved)
+        self.assertFalse(rook.has_moved)
+        self.assertNotIn((2, 0), king.legal_moves)
+
+    def test_cant_castle_if_king_or_rook_has_moved(self):
+        king = self.create_king(4, 0)
+
+        rook_left = Rook(self.chessboard, self.player1, 0, 0)
+        rook_right = Rook(self.chessboard, self.player1, 7, 0)  # Rook right
+
+        rook_left.move(1, 0)
+
+        self.assertFalse(king.has_moved)
+        self.assertTrue(rook_left.has_moved)
+
+        # Can castle right, but not left
+        self.assertIn((6, 0), king.legal_moves)
+        self.assertNotIn((2, 0), king.legal_moves)
+
+        king.move(4, 1)
+        king.move(4, 0)
+
+        self.assertTrue(king.has_moved)
+        self.assertFalse(rook_right.has_moved)
+
+        # Can't castle at all after moving
+        self.assertNotIn((6, 0), king.legal_moves)
+        self.assertNotIn((2, 0), king.legal_moves)
+
+    def test_castling_moves_king_and_rook(self):
+        king = self.create_king(4, 0)
+
+        rook = Rook(self.chessboard, self.player1, 0, 0)
+
+        self.assertTrue(king.move(2, 0))
+
+        self.assertEqual(king.position, (2, 0))
+        self.assertEqual(rook.position, (3, 0))
 
 
 class KnightTestCase(PieceTestCase):

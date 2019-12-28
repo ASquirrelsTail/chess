@@ -24,7 +24,8 @@ def print_board(board, scale=False):
             else:
                 result += '  '
         result += Back.BLACK + '\n'
-    result += Back.BLACK + Fore.WHITE + '  ' + ' '.join([str(i + (1 if scale == 'positions' else 0)) for i in range(len(board))])
+    if scale:
+        result += Back.BLACK + Fore.WHITE + '  ' + ' '.join([str(i + (1 if scale == 'positions' else 0)) for i in range(len(board))])
     print(result + Style.RESET_ALL)
 
 
