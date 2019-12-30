@@ -35,6 +35,7 @@ class Player:
         self.pieces = []
         self.direction = direction
         self.score = 0
+        self.players.append(self)
 
     def __str__(self):
         return self.name
@@ -135,4 +136,3 @@ class Piece:
 
     def kill(self):
         self.player.pieces.remove(self)
-        print(self.player.pieces)

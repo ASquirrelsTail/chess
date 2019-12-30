@@ -12,6 +12,7 @@ class PieceTestCase(unittest.TestCase):
     '''
     def setUp(self):
         self.chessboard = Chessboard()
+        Player.players = []
         self.player1 = Player('White', 1)
         self.player2 = Player('Black', -1)
 
@@ -235,6 +236,20 @@ class KingTestCase(PieceTestCase):
 
         self.assertEqual(king.position, (2, 0))
         self.assertEqual(rook.position, (3, 0))
+
+    def test_in_check(self):
+        king = self.create_king(4, 4)
+
+        self.create_enemy(5, 5)
+
+        self.assertTrue(king.in_check)
+
+    def test_not_in_check(self):
+        king = self.create_king(4, 4)
+
+        self.create_enemy(6, 5)
+
+        self.assertFalse(king.in_check)
 
 
 class KnightTestCase(PieceTestCase):

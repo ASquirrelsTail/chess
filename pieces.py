@@ -70,6 +70,17 @@ class King(Piece):
 
         return castle_moves
 
+    @property
+    def in_check(self):
+        enemy_moves = set()
+        for opponent in self.player.players:
+            if opponent is not self.player:
+                for moves in [piece.legal_moves for piece in opponent.pieces]:
+                    for move in moves:
+                        enemy_moves.add(move)
+
+        return self.position in enemy_moves
+
     def move(self, x, y):
         if (x, y) in self.castles:
             rook = next(piece for piece in self.player.pieces
