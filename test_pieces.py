@@ -258,6 +258,16 @@ class KingTestCase(PieceTestCase):
 
         self.assertEqual(king.legal_moves, [(1, 1)])
 
+        self.assertFalse(king.move(1, 0))
+        self.assertNotEqual(self.chessboard[1][0], king)
+
+    def test_kings_cant_be_adjacent(self):
+        king_one = self.create_king(4, 4)
+        king_two = King(self.chessboard, self.player2, 4, 6)
+
+        self.assertItemsNotIn([(3, 5), (4, 5), (5, 5)], king_one.legal_moves)
+        self.assertItemsNotIn([(3, 5), (4, 5), (5, 5)], king_two.legal_moves)
+
 
 class KnightTestCase(PieceTestCase):
     def create_knight(self, x, y):

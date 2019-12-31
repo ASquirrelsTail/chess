@@ -60,11 +60,9 @@ class King(Piece):
         # Remove legal moves that put the king in check.
         enemy_threats = set()
 
-        for opponent in self.player.players:
-            if opponent is not self.player:
-                for threats in [piece.threatens for piece in opponent.pieces]:
-                    for threat in threats:
-                        enemy_threats.add(threat)
+        for opponent in self.player.oponents:
+            for threats in [piece.threatens for piece in opponent.pieces]:
+                enemy_threats.update(set(threats))
 
         safe_moves = set(legal_moves)
         safe_moves.difference_update(enemy_threats)
@@ -94,11 +92,9 @@ class King(Piece):
     @property
     def in_check(self):
         enemy_moves = set()
-        for opponent in self.player.players:
-            if opponent is not self.player:
-                for moves in [piece.legal_moves for piece in opponent.pieces]:
-                    for move in moves:
-                        enemy_moves.add(move)
+        for opponent in self.player.oponents:
+            for moves in [piece.legal_moves for piece in opponent.pieces]:
+                enemy_moves.update(set(moves))
 
         return self.position in enemy_moves
 

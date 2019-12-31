@@ -43,6 +43,10 @@ class Player:
     def end_turn(self):
         pass
 
+    @property
+    def opponents(self):
+        return [player for player in self.players if player is not self]
+
 
 class Piece:
     '''
