@@ -103,6 +103,37 @@ class Piece:
         return legal_moves
 
     @property
+    def threatens(self):
+        # As legal moves, but includes spaces occupied by own pieces
+
+        def advancePosition(old_pos, direction):
+            # Advances the target from its old position in the given direction.
+            x, y = old_pos
+            ad_x, ad_y = direction
+            return (x + ad_x, y + ad_y * self.player.direction)
+
+        threatens = []
+
+        for position in self.moves:
+            target = self.positionRelative(position)
+            target_piece = self.board.get(*target)
+            if target_piece is not False:
+                threatens.append(target)
+
+        for direction in self.move_directions:
+            target = self.positionRelative(direction)
+            target_piece = self.board.get(*target)
+            while target_piece is None:
+                threatens.append(target)
+                target = advancePosition(target, direction)
+                target_piece = self.board.get(*target)
+            else:
+                if target_piece is not None:
+                    threatens.append(target)
+
+        return threatens
+
+    @property
     def x(self):
         return self._x
 

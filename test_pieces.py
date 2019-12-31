@@ -1,5 +1,5 @@
 import unittest
-from chess import Chessboard, Player
+from chess import Chessboard, Player, Piece
 from pieces import Pawn, King, Queen, Knight, Rook, Bishop
 from sys import argv
 if '-v' in argv:
@@ -170,13 +170,12 @@ class KingTestCase(PieceTestCase):
                               [(1, 7), (0, 6), (1, 6)])
 
     def test_can_attack_in_all_directions(self):
-        # This test needs ammending if it becomes illegal for Kings to move in to check.
         king = self.create_king(4, 4)
 
         for position in [(3, 5), (4, 5), (5, 5),
                          (3, 4), (5, 4),
                          (3, 3), (4, 3), (5, 3)]:
-            self.create_enemy(*position)
+            Piece(self.chessboard, self.player2, *position)  # Use blank Piece for target so it can't fight back and block moves into check.
 
         self.assertCountEqual(king.legal_moves,
                               [(3, 5), (4, 5), (5, 5),
@@ -250,6 +249,14 @@ class KingTestCase(PieceTestCase):
         self.create_enemy(6, 5)
 
         self.assertFalse(king.in_check)
+
+    def test_cant_move_in_to_check(self):
+        king = self.create_king(0, 0)
+
+        self.create_enemy(0, 1)
+        self.create_enemy(1, 2)
+
+        self.assertEqual(king.legal_moves, [(1, 1)])
 
 
 class KnightTestCase(PieceTestCase):

@@ -35,6 +35,15 @@ class Pawn(Piece):
 
         return legal_moves
 
+    @property
+    def threatens(self):
+        threatens = []
+        for position in [self.positionRelative((-1, 1)), self.positionRelative((1, 1))]:
+            if self.board.get(*position) is not False:
+                threatens.append(position)
+
+        return threatens
+
 
 class King(Piece):
     name = 'King'
@@ -49,6 +58,18 @@ class King(Piece):
         legal_moves += self.castles
 
         # Remove legal moves that put the king in check.
+        enemy_threats = set()
+
+        for opponent in self.player.players:
+            if opponent is not self.player:
+                for threats in [piece.threatens for piece in opponent.pieces]:
+                    for threat in threats:
+                        enemy_threats.add(threat)
+
+        safe_moves = set(legal_moves)
+        safe_moves.difference_update(enemy_threats)
+
+        legal_moves = list(safe_moves)
 
         return legal_moves
 
