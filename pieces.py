@@ -60,7 +60,7 @@ class King(Piece):
         # Remove legal moves that put the king in check.
         enemy_threats = set()
 
-        for opponent in self.player.oponents:
+        for opponent in self.player.opponents:
             for threats in [piece.threatens for piece in opponent.pieces]:
                 enemy_threats.update(set(threats))
 
@@ -79,7 +79,7 @@ class King(Piece):
         castle_moves = []
 
         castle_positions = {self.positionRelative(position) for position in CARDINAL_DIRECTIONS}
-        for rook in filter(lambda piece: piece.name == 'Rook' and not piece.has_moved, self.player.pieces):
+        for rook in [piece for piece in self.player.pieces if piece.name == 'Rook' and not piece.has_moved]:
             intersection = set(rook.legal_moves).intersection(castle_positions)
             if intersection:
                 castle_target = intersection.pop()
@@ -92,7 +92,7 @@ class King(Piece):
     @property
     def in_check(self):
         enemy_moves = set()
-        for opponent in self.player.oponents:
+        for opponent in self.player.opponents:
             for moves in [piece.legal_moves for piece in opponent.pieces]:
                 enemy_moves.update(set(moves))
 
