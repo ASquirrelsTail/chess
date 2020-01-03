@@ -10,6 +10,7 @@ class PieceTestCase(unittest.TestCase):
     '''
     Test case to set up board and players and add utility functions.
     '''
+
     def setUp(self):
         self.chessboard = Chessboard()
         Player.players = []
@@ -130,7 +131,7 @@ class PawnTestCase(PieceTestCase):
     def test_cant_move_off_edge_of_board(self):
         pawn = self.create_pawn(4, 7)
 
-        self.assertEqual([], pawn.legal_moves)
+        self.assertEqual(set(), pawn.legal_moves)
 
     def test_taking_pawn_awards_one_point(self):
         self.create_pawn(4, 4)
@@ -161,7 +162,7 @@ class KingTestCase(PieceTestCase):
                          (3, 3), (4, 3), (5, 3)]:
             self.create_pawn(*position)
 
-        self.assertEqual(king.legal_moves, [])
+        self.assertEqual(king.legal_moves, set())
 
     def test_cant_move_off_edge_of_board(self):
         king = self.create_king(0, 7)
@@ -256,7 +257,7 @@ class KingTestCase(PieceTestCase):
         self.create_enemy(0, 1)
         self.create_enemy(1, 2)
 
-        self.assertEqual(king.legal_moves, [(1, 1)])
+        self.assertCountEqual(king.legal_moves, [(1, 1)])
 
         self.assertFalse(king.move(1, 0))
         self.assertNotEqual(self.chessboard[1][0], king)
@@ -267,6 +268,34 @@ class KingTestCase(PieceTestCase):
 
         self.assertItemsNotIn([(3, 5), (4, 5), (5, 5)], king_one.legal_moves)
         self.assertItemsNotIn([(3, 5), (4, 5), (5, 5)], king_two.legal_moves)
+
+    def test_other_pieces_cant_move_and_leave_the_king_in_check(self):
+        king = self.create_king(5, 0)
+        pawn = self.create_pawn(6, 1)
+
+        self.create_enemy(4, 1)
+
+        self.assertTrue(king.in_check)
+        self.assertEqual(pawn.legal_moves, set())
+
+    def test_other_pieces_must_block_or_counter_attack_checking_pieces(self):
+        king = self.create_king(5, 0)
+        queen = Queen(self.chessboard, self.player1, 0, 2)
+
+        Rook(self.chessboard, self.player2, 5, 7)  # Enemy Rook
+
+        self.assertTrue(king.in_check)
+        self.assertCountEqual(queen.legal_moves, [(5, 7), (5, 2)])
+
+    def test_pinned_pieces_cant_move_putting_the_king_in_check(self):
+        king = self.create_king(5, 0)
+        rook = Rook(self.chessboard, self.player1, 5, 1)
+
+        Rook(self.chessboard, self.player2, 5, 7)  # Enemy Rook
+
+        self.assertFalse(king.in_check)
+        self.assertCountEqual(rook.legal_moves,  # Can only move where it still blocks the enemy rook's attack
+                              [(5, 2), (5, 3), (5, 4), (5, 6), (5, 7)])
 
 
 class KnightTestCase(PieceTestCase):
@@ -291,7 +320,7 @@ class KnightTestCase(PieceTestCase):
                          (3, 2), (5, 2)]:
             self.create_pawn(*position)
 
-        self.assertEqual(knight.legal_moves, [])
+        self.assertEqual(knight.legal_moves, set())
 
     def test_cant_move_off_board(self):
         knight = self.create_knight(1, 6)
@@ -360,7 +389,7 @@ class RookTestCase(PieceTestCase):
         for position in [(1, 0), (0, 1)]:
             self.create_pawn(*position)
 
-        self.assertEqual(rook.legal_moves, [])
+        self.assertEqual(rook.legal_moves, set())
 
     def test_can_attack_in_cardinal_directions(self):
         rook = self.create_rook(4, 4)
@@ -381,7 +410,7 @@ class RookTestCase(PieceTestCase):
         self.create_pawn(1, 0)
         self.create_enemy(0, 3)
 
-        self.assertEqual(rook.legal_moves, [(0, 1)])
+        self.assertCountEqual(rook.legal_moves, [(0, 1)])
 
     def test_taking_rook_awards_five_points(self):
         self.create_rook(4, 4)
@@ -432,7 +461,7 @@ class BishopTestCase(PieceTestCase):
         self.create_pawn(2, 2)
         self.create_enemy(3, 3)
 
-        self.assertEqual(bishop.legal_moves, [(1, 1)])
+        self.assertCountEqual(bishop.legal_moves, [(1, 1)])
 
     def test_taking_bishop_awards_three_points(self):
         self.create_bishop(4, 4)

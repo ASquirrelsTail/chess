@@ -35,6 +35,7 @@ class Player:
         self.pieces = []
         self.direction = direction
         self.score = 0
+        self.king = False
         self.players.append(self)
 
     def __str__(self):
@@ -78,62 +79,30 @@ class Piece:
         '''
         Returns a list of tuples for legal moves.
         '''
-        def advancePosition(old_pos, direction):
-            # Advances the target from its old position in the given direction.
-            x, y = old_pos
-            ad_x, ad_y = direction
-            return (x + ad_x, y + ad_y * self.player.direction)
-
-        legal_moves = []
-
-        for position in self.moves:
-            target = self.positionRelative(position)
-            target_piece = self.board.get(*target)
-            if target_piece is None \
-                    or (target_piece and target_piece.player is not self.player):
-                legal_moves.append(target)
-
-        for direction in self.move_directions:
-            target = self.positionRelative(direction)
-            target_piece = self.board.get(*target)
-            while target_piece is None:
-                legal_moves.append(target)
-                target = advancePosition(target, direction)
-                target_piece = self.board.get(*target)
-            else:
-                if target_piece and target_piece.player is not self.player:
-                    legal_moves.append(target)
-
-        return legal_moves
+        return {position for position in self.threatens
+                if self.board.get(*position) is None or
+                self.board.get(*position).player is not self.player}
 
     @property
     def threatens(self):
-        # As legal moves, but includes spaces occupied by own pieces
-
-        def advancePosition(old_pos, direction):
-            # Advances the target from its old position in the given direction.
-            x, y = old_pos
-            ad_x, ad_y = direction
-            return (x + ad_x, y + ad_y * self.player.direction)
-
-        threatens = []
+        threatens = set()
 
         for position in self.moves:
             target = self.positionRelative(position)
             target_piece = self.board.get(*target)
             if target_piece is not False:
-                threatens.append(target)
+                threatens.add(target)
 
         for direction in self.move_directions:
             target = self.positionRelative(direction)
             target_piece = self.board.get(*target)
             while target_piece is None:
-                threatens.append(target)
-                target = advancePosition(target, direction)
+                threatens.add(target)
+                target = self.advancePosition(target, direction)
                 target_piece = self.board.get(*target)
             else:
-                if target_piece is not None:
-                    threatens.append(target)
+                if target_piece:
+                    threatens.add(target)
 
         return threatens
 
@@ -153,6 +122,15 @@ class Piece:
         # Sets the target relative to the piece's current position.
         x, y = pos
         return (self.x + x, self.y + y * self.player.direction)
+
+    def advancePosition(self, old_pos, direction):
+        '''
+        Advances the target from its old position in the given direction,
+        relative to the player's facing.
+        '''
+        x, y = old_pos
+        ad_x, ad_y = direction
+        return (x + ad_x, y + ad_y * self.player.direction)
 
     def move(self, x, y):
         if (x, y) in self.legal_moves:
