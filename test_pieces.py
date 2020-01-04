@@ -141,6 +141,14 @@ class PawnTestCase(PieceTestCase):
 
         self.assertEqual(self.player2.score, 1)
 
+    def test_moving_a_pawn_to_the_opposite_edge_promotes_to_queen(self):
+        pawn = self.create_pawn(4, 6)
+
+        pawn.move(4, 7)
+
+        self.assertIsInstance(self.chessboard[4][7], Queen)
+        self.assertIs(self.chessboard[4][7].player, self.player1)
+
 
 class KingTestCase(PieceTestCase):
     def create_king(self, x, y):
@@ -300,6 +308,14 @@ class KingTestCase(PieceTestCase):
                               [(5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7)])
         self.assertCountEqual(pawn.legal_moves,  # Can only attack the queen, can't move forward exposing king
                               [(7, 2)])
+
+    def test_cant_move_away_from_threat_while_remaining_in_check(self):
+        king = self.create_king(4, 4)
+
+        Rook(self.chessboard, self.player2, 4, 7)  # Enemy Rook
+
+        self.assertTrue(king.in_check)
+        self.assertNotIn((4, 3), king.legal_moves)
 
 
 class KnightTestCase(PieceTestCase):

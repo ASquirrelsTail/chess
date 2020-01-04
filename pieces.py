@@ -72,6 +72,13 @@ class Pawn(DefensivePiece):
 
         return threatens
 
+    def move(self, *args):
+        moved = super().move(*args)
+        if moved and self.y == (len(self.board[0]) - 1) + ((self.player.direction // 2) * (len(self.board[0]) - 1)):
+            self.kill()
+            Queen(self.board, self.player, *self.position)
+        return moved
+
 
 class King(Piece):
     name = 'King'
@@ -94,6 +101,17 @@ class King(Piece):
         for opponent in self.player.opponents:
             for threats in [piece.threatens for piece in opponent.pieces]:
                 legal_moves.difference_update(threats)
+
+        if self.threatened_by:
+            blocked_by_self = set()
+            for attacker in self.threatened_by:
+                if attacker.move_directions:  # If the threat can be blocked
+                    direction = (attacker.x - self.player.king.x,
+                                 attacker.y - self.player.king.y)
+                    direction = (-max(min(direction[0], 1), -1), -max(min(direction[1], 1), -1) * self.player.direction)
+                    blocked_by_self.add(self.positionRelative(direction))
+
+            legal_moves.difference_update(blocked_by_self)
 
         return legal_moves
 

@@ -3,6 +3,7 @@ from console import print_board, LETTERS
 import pieces
 import re
 from random import choice
+import sys
 
 
 class HumanPlayer(Player):
@@ -25,7 +26,7 @@ class RandomPlayer(Player):
 
 
 chessboard = Chessboard()
-white = HumanPlayer('White', 1)
+white = RandomPlayer('White', 1) if 'cpu' in sys.argv else HumanPlayer('White', 1)
 black = RandomPlayer('Black', -1)
 
 
@@ -54,8 +55,9 @@ set_up_pieces(chessboard, black)
 
 current_player = white
 
+total_moves = 0
 move = ''
-while move != 'exit':
+while move != 'exit' and total_moves < 1000:
     draw()
     move = current_player.play_turn()
     if 'to' in move:
@@ -66,8 +68,16 @@ while move != 'exit':
 
             if piece and piece.player == current_player:
                 if piece.move(*target):
+                    total_moves += 1
                     current_player = black if current_player is white else white
                     if not [piece for piece in current_player.pieces if piece.legal_moves]:
                         draw()
-                        print("Check mate, {} wins.".format(black if current_player is white else white))
+                        if current_player.king.in_check:
+                            print('Check mate, {} wins.'.format(black if current_player is white else white))
+                        else:
+                            print('Stalemate. Game draw!')
+                        move = 'exit'
+                    if len(black.pieces) == 1 and len(white.pieces) == 1:
+                        draw()
+                        print('Game draw!')
                         move = 'exit'
