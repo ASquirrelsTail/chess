@@ -290,12 +290,16 @@ class KingTestCase(PieceTestCase):
     def test_pinned_pieces_cant_move_putting_the_king_in_check(self):
         king = self.create_king(5, 0)
         rook = Rook(self.chessboard, self.player1, 5, 1)
+        pawn = self.create_pawn(6, 1)
 
         Rook(self.chessboard, self.player2, 5, 7)  # Enemy Rook
+        Queen(self.chessboard, self.player2, 7, 2)  # Enemy Queen
 
         self.assertFalse(king.in_check)
         self.assertCountEqual(rook.legal_moves,  # Can only move where it still blocks the enemy rook's attack
-                              [(5, 2), (5, 3), (5, 4), (5, 6), (5, 7)])
+                              [(5, 2), (5, 3), (5, 4), (5, 5), (5, 6), (5, 7)])
+        self.assertCountEqual(pawn.legal_moves,  # Can only attack the queen, can't move forward exposing king
+                              [(7, 2)])
 
 
 class KnightTestCase(PieceTestCase):

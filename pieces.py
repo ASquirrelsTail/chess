@@ -7,18 +7,34 @@ ALL_DIRECTIONS = CARDINAL_DIRECTIONS + DIAGONAL_DIRECTIONS
 
 
 class DefensivePiece(Piece):
+    '''
+    A DefensivePiece will not leave or put a player's king in check.
+    '''
+
+    def defend_king(self, legal_moves):
+        '''
+        If the king is in check, or this piece is pinned, constrain its moves to those
+        that are legal to protect the king.
+        '''
+        if self.player.king:
+            if self.player.king.defensive_moves is not False:  # Constrain legal moves to any defensive moves required by a king in check
+                legal_moves.intersection_update(self.player.king.defensive_moves)
+
+            if self.player.king.blocked_directions:  # Constrain legal moves of pinned pieces to keep the king out of check
+                for blocked_line in self.player.king.blocked_directions:
+                    if self.position in blocked_line:
+                        legal_moves.intersection_update(blocked_line)
+
+        return legal_moves
+
     @property
     def legal_moves(self):
         legal_moves = super().legal_moves
 
-        # Constrain legal moves to any defensive moves required by a king in check
-        if self.player.king and self.player.king.defensive_moves is not False:
-            legal_moves.intersection_update(self.player.king.defensive_moves)
-
-        return legal_moves
+        return self.defend_king(legal_moves)
 
 
-class Pawn(Piece):
+class Pawn(DefensivePiece):
     '''
     A Pawn can move forward one space, and attack diagonally in the forward direction.
     On its fist move it may move two spaces.
@@ -45,11 +61,7 @@ class Pawn(Piece):
             if piece and piece.player is not self.player:
                 legal_moves.add(position)
 
-        # Constrain legal moves to any defensive moves required by a king in check
-        if self.player.king and self.player.king.defensive_moves is not False:
-            legal_moves.intersection_update(self.player.king.defensive_moves)
-
-        return legal_moves
+        return self.defend_king(legal_moves)
 
     @property
     def threatens(self):
@@ -145,6 +157,36 @@ class King(Piece):
                     position = self.player.king.advancePosition(position, direction)
 
         return defensive_moves
+
+    @property
+    def blocked_directions(self):
+        '''
+        Returns list of sets of positions that can be safely occupied by pinned allied pieces.
+        '''
+        blocked_directions = []
+
+        for direction in ALL_DIRECTIONS:
+            blocking_positions = set()
+            target = self.positionRelative(direction)
+            target_piece = self.board.get(*target)
+            blocker = False
+            attacker = False
+            while target_piece is not False:
+                blocking_positions.add(target)
+                if target_piece:
+                    if not blocker and target_piece.player is self.player:
+                        blocker = target_piece
+                    elif blocker and target_piece.player is not self.player:
+                        attacker = target_piece
+                        if direction in attacker.move_directions:
+                            blocked_directions.append(blocking_positions)
+                        break
+                    else:
+                        break
+                target = self.advancePosition(target, direction)
+                target_piece = self.board.get(*target)
+
+        return blocked_directions
 
     def move(self, x, y):
         if (x, y) in self.castles:
