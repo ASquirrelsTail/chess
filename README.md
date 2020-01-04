@@ -2,9 +2,9 @@
 
 Chess written in python. Maybe to throw at some angry AI.
 
+play.py launches a game against a computer controlled black player who plays a legal move at random.
+
 ## To do
 
-- Add turns for players.
-- Prevent King moving/attacking into check.
-- Prevent other pieces moving to put King into check.
+- Learn how to pass the state of the board and possible moves to a machine learning algorithm.
 - Make legal moves cache until the end of the turn.

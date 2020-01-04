@@ -2,10 +2,31 @@ from chess import Chessboard, Player
 from console import print_board, LETTERS
 import pieces
 import re
+from random import choice
+
+
+class HumanPlayer(Player):
+    def play_turn(self):
+        move = input('{} player enter move:\n'.format(current_player)).lower()
+        return move
+
+
+class RandomPlayer(Player):
+    def play_turn(self):
+        possible_moves = []
+        for piece in self.pieces:
+            for move in piece.legal_moves:
+                possible_moves.append((piece.position, move))
+
+        selected_piece, target = choice(possible_moves)
+        move = '{}{} to {}{}'.format(LETTERS[selected_piece[0]], selected_piece[1] + 1, LETTERS[target[0]], target[1] + 1)
+
+        return move
+
 
 chessboard = Chessboard()
-white = Player('White', 1)
-black = Player('Black', -1)
+white = HumanPlayer('White', 1)
+black = RandomPlayer('Black', -1)
 
 
 def set_up_pieces(board, player):
@@ -36,7 +57,7 @@ current_player = white
 move = ''
 while move != 'exit':
     draw()
-    move = input('{} player enter move:\n'.format(current_player)).lower()
+    move = current_player.play_turn()
     if 'to' in move:
         instructions = [i.strip() for i in move.lower().split('to')]
         if re.search('^[a-z][1-9]$', instructions[0]) and re.search('^[a-z][1-9]$', instructions[1]):
@@ -46,3 +67,7 @@ while move != 'exit':
             if piece and piece.player == current_player:
                 if piece.move(*target):
                     current_player = black if current_player is white else white
+                    if not [piece for piece in current_player.pieces if piece.legal_moves]:
+                        draw()
+                        print("Check mate, {} wins.".format(black if current_player is white else white))
+                        move = 'exit'
